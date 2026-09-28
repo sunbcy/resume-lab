@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'roboto-regular';
+  src: url('https://dasstatic.alicdn.com/alisis3/fonts/Roboto-Regular.ttf');
+}
+
+@layer base {
+  /* 主题色由 JS 注入为 --brand-rgb / --tag-rgb（形如 "47 87 133"） */
+  :root {
+    --brand-rgb: 47 87 133;
+    --tag-rgb: 139 195 74;
+    --primary-color: #2f5785;
+    --tag-color: #8bc34a;
+  }
+
+  body {
+    @apply font-sans text-[14px];
+    margin: 0;
+  }
+}
+
+/* ============ 打印（导出 PDF）============ */
+@media print {
+  @page {
+    size: A4;
+    /* 页边距 0：让彩色栏上下满幅出血到页边 */
+    margin: 0;
+  }
+
+  html,
+  body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .resume-sheet {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    width: 794px !important;
+  }
+
+  /* 默认模板（split）打印时强制两栏，避免依赖屏幕断点而退化为单列 */
+  .print-split {
+    display: grid !important;
+    grid-template-columns: 2fr 3fr !important;
+    min-height: 942px !important;
+  }
+  /* 彩色栏满幅出血：背景直接画在网格单元上，单元随右栏自然延展、跨页绘制，
+     因此每一页（含次页）都保留彩色侧栏，且上下满幅出血 */
+  .print-split > :first-child {
+    background: #f6f7f9;
+    border-right: 1px solid #e6e8eb;
+  }
+  /* 列内竖向 padding 归零，留白改由「标题/条目的统一 padding」提供：
+     标题与条目均为原子块（break-inside: avoid），分页必落在它们的边界，
+     故每一页顶部（首元素 padding-top）与底部（末元素 padding-bottom）都获得
+     相同留白；彩色背景由网格单元绘制 → 背景满幅出血，文字于是“仅内缩” */
+  .print-split > :first-child,
+  .print-split > :last-child {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .print-split .module-title {
+    margin: 0 !important;
+    padding-top: 16px !important;
+    padding-bottom: 6px !important;
+  }
+  .print-split .module-item {
+    margin: 0 !important;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  /* 按模块分块分页：单个模块整体尽量不切断；
+     当某模块整体超过一页时，退化为「列表单条不切断」，多条之间自然落到下一页 */
+  .resume-module {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* flow 模式（右栏工作经历/项目经历）：整块允许跨页拆分，
+     只有列表单条（.module-item）保持不切断，实现条目级连续分页 */
+  .resume-module.resume-module--flow {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  .module-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .module-title {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+}
+
+/* 简历正文里由换行符控制的段落 */
+.white-space-pre {
+  white-space: pre-wrap;
+}
