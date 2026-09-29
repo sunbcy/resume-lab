@@ -228,8 +228,8 @@ const isEdit = computed(() => mode.value === 'edit');
 
 /* ============ 历史版本（localStorage，按 user 隔离） ============ */
 const versions = ref<ResumeVersion[]>([]);
-/** 左侧历史版本面板是否展开 */
-const historyOpen = ref(false);
+/** 左侧历史版本面板是否展开（编辑模式下默认常驻展开） */
+const historyOpen = ref(true);
 function toggleHistory() {
   historyOpen.value = !historyOpen.value;
 }
