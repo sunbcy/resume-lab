@@ -15,7 +15,11 @@ export function readLocalConfig(user?: string): ResumeConfig | null {
 
 export function writeLocalConfig(user: string | undefined, config: ResumeConfig) {
   if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(LOCAL_KEY(user), JSON.stringify(config));
+  try {
+    localStorage.setItem(LOCAL_KEY(user), JSON.stringify(config));
+  } catch {
+    // 头像等字段可能含较大 DataURL，超出 localStorage 配额时静默忽略，避免中断更新流程
+  }
 }
 
 export function clearLocalConfig(user?: string) {
@@ -40,5 +44,9 @@ export function readVersions(user?: string): ResumeVersion[] {
 
 export function writeVersions(user: string | undefined, versions: ResumeVersion[]) {
   if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(VERSION_KEY(user), JSON.stringify(versions));
+  try {
+    localStorage.setItem(VERSION_KEY(user), JSON.stringify(versions));
+  } catch {
+    // 历史版本同样可能超出配额，静默忽略
+  }
 }

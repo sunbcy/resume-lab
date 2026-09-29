@@ -1,6 +1,13 @@
 import type { ModuleKey } from '@/types/resume';
 
-export type FieldType = 'input' | 'textArea' | 'number' | 'select' | 'checkbox';
+export type FieldType =
+  | 'input'
+  | 'textArea'
+  | 'number'
+  | 'select'
+  | 'checkbox'
+  /** 本地图片上传：渲染文件选择 + DataURL 预览，仍保留 URL 手动输入 */
+  | 'image';
 
 export interface FieldSchema {
   type: FieldType;
@@ -36,10 +43,10 @@ export const FORM_SCHEMA: Record<ModuleKey, FieldSchema[]> = {
       ],
     },
     {
-      type: 'input',
+      type: 'image',
       attributeId: 'src',
-      displayName: '头像链接',
-      placeholder: '图片 URL，可先上传后自动填入',
+      displayName: '头像图片',
+      placeholder: '图片 URL，或点击「选择本地图片」上传',
     },
     {
       type: 'input',

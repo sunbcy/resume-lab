@@ -97,6 +97,13 @@ function onSubmit(value: Record<string, unknown>) {
   currentIndex.value = null;
 }
 
+/** 字段实时变化（如选图）时即时回写 store，让预览同步刷新（仅对象型模块） */
+function onLiveUpdate(value: Record<string, unknown>) {
+  const key = currentKey.value;
+  if (!key || isListKey(key)) return;
+  store.updateModule(key, value);
+}
+
 const getItems = (key: ModuleKey) => store.getList(key as ListModuleKey);
 const editItem = (key: ModuleKey, index: number) =>
   openItem(key as ListModuleKey, index);
@@ -164,6 +171,7 @@ const addItem = (key: ModuleKey) => openAdd(key as ListModuleKey);
         :schema="schema"
         :value="currentValue"
         @submit="onSubmit"
+        @update="onLiveUpdate"
       />
     </BaseDrawer>
   </div>

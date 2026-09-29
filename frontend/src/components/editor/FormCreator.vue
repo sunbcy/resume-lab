@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import type { FieldSchema } from '@/config/formSchema';
 import { useI18n } from '@/composables/useI18n';
 
@@ -8,12 +8,50 @@ const props = defineProps<{
   value: Record<string, unknown> | null;
 }>();
 
-const emit = defineEmits<{ submit: [value: Record<string, unknown>] }>();
+const emit = defineEmits<{
+  submit: [value: Record<string, unknown>];
+  /** 字段变化时的实时回写（如选图），用于预览即时刷新 */
+  update: [value: Record<string, unknown>];
+}>();
 const { t } = useI18n();
 
 const form = ref<Record<string, any>>({});
 const errors = ref<Record<string, string>>({});
 const formEl = ref<HTMLFormElement | null>(null);
+/** 每个 image 字段各自持有隐藏的 file input（避免 v-for 把 ref 收集成数组） */
+const fileInputs = ref<Record<string, HTMLInputElement | null>>({});
+/** 正在读取本地图片的字段（DataURL 为异步，避免提交时 src 仍为空） */
+const imgLoading = ref<Record<string, boolean>>({});
+const isImgLoading = computed(() =>
+  Object.values(imgLoading.value).some(Boolean),
+);
+
+/** 选择本地图片 → 转 DataURL 写入对应字段（读取完成前禁用提交） */
+function onPickImage(field: FieldSchema, e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  imgLoading.value[field.attributeId] = true;
+  const reader = new FileReader();
+  reader.onload = () => {
+    form.value[field.attributeId] = reader.result as string;
+    imgLoading.value[field.attributeId] = false;
+    // 实时写回 store，让简历预览立即显示
+    emit('update', { ...form.value });
+  };
+  reader.onerror = () => {
+    imgLoading.value[field.attributeId] = false;
+  };
+  reader.readAsDataURL(file);
+  // 允许重复选择同一文件
+  input.value = '';
+}
+
+/** 清空当前图片 */
+function clearImage(field: FieldSchema) {
+  form.value[field.attributeId] = '';
+  emit('update', { ...form.value });
+}
 
 /** 让所有 textarea 根据内容自适应高度，长文本/emoji 不裁切 */
 function syncHeights() {
@@ -128,6 +166,53 @@ function submit() {
           {{ String(form[field.attributeId] ?? '').length }} 字
         </div>
 
+        <!-- image（本地上传 + URL 输入 + 预览） -->
+        <div v-else-if="field.type === 'image'">
+          <div class="mb-2 flex items-center gap-3">
+            <div
+              class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-dashed border-gray-300 bg-gray-50 text-[11px] text-gray-400"
+            >
+              <img
+                v-if="form[field.attributeId]"
+                :src="form[field.attributeId]"
+                alt="avatar"
+                class="h-full w-full object-cover"
+              />
+              <span v-else>无图片</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button
+                type="button"
+                class="rounded border border-brand px-3 py-[6px] text-[13px] text-brand hover:bg-brand hover:text-white"
+                @click="fileInputs[field.attributeId]?.click()"
+              >
+                {{ t('选择本地图片') }}
+              </button>
+              <button
+                v-if="form[field.attributeId]"
+                type="button"
+                class="rounded border border-gray-300 px-3 py-[6px] text-[13px] text-gray-600 hover:bg-gray-100"
+                @click="clearImage(field)"
+              >
+                {{ t('清除图片') }}
+              </button>
+            </div>
+            <input
+              :ref="(el: any) => (fileInputs[field.attributeId] = el as HTMLInputElement | null)"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="onPickImage(field, $event)"
+            />
+          </div>
+          <input
+            v-model="form[field.attributeId]"
+            type="text"
+            :placeholder="field.placeholder ? t(field.placeholder) : ''"
+            class="w-full rounded border border-gray-300 px-3 py-[6px] text-[13px] outline-none focus:border-brand"
+          />
+        </div>
+
         <!-- input -->
         <input
           v-else
@@ -145,9 +230,10 @@ function submit() {
 
     <button
       type="submit"
-      class="w-full rounded bg-brand px-4 py-2 text-[13px] text-white hover:opacity-90"
+      :disabled="isImgLoading"
+      class="w-full rounded bg-brand px-4 py-2 text-[13px] text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {{ t('提交') }}
+      {{ isImgLoading ? t('图片处理中') : t('提交') }}
     </button>
   </form>
 </template>

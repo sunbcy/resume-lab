@@ -123,7 +123,7 @@ start_backend() {
   echo $! >"$BACKEND_PID"
 
   for _ in {1..30}; do
-    if curl -fsS "http://127.0.0.1:$BACKEND_PORT/api/health" >/dev/null 2>&1; then
+    if curl -fsS --noproxy '*' "http://127.0.0.1:$BACKEND_PORT/api/health" >/dev/null 2>&1; then
       ok "后端已就绪  http://127.0.0.1:$BACKEND_PORT  (PID $(cat "$BACKEND_PID"))"
       return 0
     fi
@@ -140,8 +140,8 @@ start_frontend() {
     warn "端口 $FRONTEND_PORT 已被占用，跳过启动（可先执行 ./run.sh stop）"
     return 0
   fi
-  if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
-    warn "未检测到 node_modules，先安装依赖"
+  if [[ ! -x "$FRONTEND_DIR/node_modules/.bin/vite" ]]; then
+    warn "未检测到 vite（devDependencies 可能缺失），重新安装前端依赖"
     setup_frontend
   fi
   cd "$FRONTEND_DIR"
@@ -149,7 +149,7 @@ start_frontend() {
   echo $! >"$FRONTEND_PID"
 
   for _ in {1..30}; do
-    if curl -fsS "http://localhost:$FRONTEND_PORT" >/dev/null 2>&1; then
+    if curl -fsS --noproxy '*' "http://localhost:$FRONTEND_PORT" >/dev/null 2>&1; then
       ok "前端已就绪  http://localhost:$FRONTEND_PORT  (PID $(cat "$FRONTEND_PID"))"
       return 0
     fi
