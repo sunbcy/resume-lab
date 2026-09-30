@@ -50,3 +50,22 @@ export function writeVersions(user: string | undefined, versions: ResumeVersion[
     // 历史版本同样可能超出配额，静默忽略
   }
 }
+
+/** 历史版本面板常驻开关（全局 UI 偏好，不随 user 切换；默认展开） */
+export const HISTORY_OPEN_KEY = 'resume-history-panel-open';
+
+export function readHistoryOpen(): boolean {
+  if (typeof localStorage === 'undefined') return true;
+  const raw = localStorage.getItem(HISTORY_OPEN_KEY);
+  if (raw === null) return true; // 默认常驻展开
+  return raw === '1';
+}
+
+export function writeHistoryOpen(open: boolean) {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(HISTORY_OPEN_KEY, open ? '1' : '0');
+  } catch {
+    // UI 偏好写入失败不影响主流程
+  }
+}

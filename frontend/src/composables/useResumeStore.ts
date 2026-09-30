@@ -10,7 +10,7 @@ import { DEFAULT_RESUME, DEFAULT_THEME } from '@/config/defaultResume';
 import { DEFAULT_TEMPLATE } from '@/config/templates';
 import { getDefaultTitleNameMap } from '@/config/titles';
 import { customAssign, omitLocales } from '@/utils/customAssign';
-import { readLocalConfig, writeLocalConfig, readVersions, writeVersions } from '@/utils/storage';
+import { readLocalConfig, writeLocalConfig, readVersions, writeVersions, readHistoryOpen, writeHistoryOpen } from '@/utils/storage';
 import { throttle } from '@/utils/throttle';
 import { fetchRemoteResume } from '@/api/resume';
 import { useI18n } from './useI18n';
@@ -228,10 +228,11 @@ const isEdit = computed(() => mode.value === 'edit');
 
 /* ============ 历史版本（localStorage，按 user 隔离） ============ */
 const versions = ref<ResumeVersion[]>([]);
-/** 左侧历史版本面板是否展开（编辑模式下默认常驻展开） */
-const historyOpen = ref(true);
+/** 历史版本面板是否展开（主界面与编辑态均生效，偏好持久化，默认常驻展开） */
+const historyOpen = ref(readHistoryOpen());
 function toggleHistory() {
   historyOpen.value = !historyOpen.value;
+  writeHistoryOpen(historyOpen.value);
 }
 
 /** 本地时间格式化（YYYY-MM-DD HH:mm），用于版本默认名与列表展示 */

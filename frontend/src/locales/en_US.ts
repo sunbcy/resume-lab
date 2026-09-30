@@ -90,6 +90,8 @@ export const en_US: Record<string, string> = {
 
   // 历史版本
   历史版本: 'History',
+  收起历史版本: 'Hide history',
+  展开历史版本: 'Show history',
   保存当前为新版本: 'Save current as new version',
   '版本名称（如：投递字节-春招终稿）': 'Version name (e.g. ByteDance Spring intern final)',
   '备注（可选）': 'Note (optional)',

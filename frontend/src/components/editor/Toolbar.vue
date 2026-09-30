@@ -67,14 +67,6 @@ async function onFileChange(e: Event) {
       </button>
 
       <button
-        class="flex items-center gap-1 rounded border px-3 py-2 text-[13px] hover:bg-gray-50"
-        :class="store.historyOpen ? 'border-brand bg-brand/5 text-brand' : 'border-gray-300 text-gray-700'"
-        @click="store.toggleHistory()"
-      >
-        <Icon name="clock" size="14" />{{ t('历史版本') }}
-      </button>
-
-      <button
         class="flex items-center gap-1 rounded border border-gray-300 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50"
         @click="fileInput?.click()"
       >

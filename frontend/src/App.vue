@@ -74,8 +74,25 @@ const githubLink = computed(
     <Toolbar v-if="isEdit" />
 
     <main class="flex items-start gap-3 p-3">
-      <!-- 左侧历史版本面板（仅编辑模式） -->
-      <VersionHistoryPanel v-if="isEdit && historyOpen" />
+      <!-- 左侧页签栏：点击展开/收起历史版本（页签式，始终可见） -->
+      <div class="no-print sticky top-[112px] z-20 flex">
+        <button
+          class="flex w-[42px] flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-[12px] transition"
+          :class="
+            historyOpen
+              ? 'border-brand bg-brand/5 text-brand shadow-sm'
+              : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
+          "
+          :title="historyOpen ? t('收起历史版本') : t('展开历史版本')"
+          @click="store.toggleHistory()"
+        >
+          <Icon name="clock" size="18" />
+          <span class="[writing-mode:vertical-rl] tracking-[0.2em]">历史版本</span>
+        </button>
+      </div>
+
+      <!-- 历史版本面板（主界面与编辑态均常驻，可手动隐藏） -->
+      <VersionHistoryPanel v-if="historyOpen" />
 
       <div class="flex flex-1 justify-center">
       <!-- 加载中 -->
